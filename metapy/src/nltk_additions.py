@@ -7,7 +7,7 @@ nltk.download('wordnet')
 nltk.download('omw-1.4')
 nltk.download('averaged_perceptron_tagger')
 
-
+# NLTK integrated Inl2 retrieval functionality (MP Integration Function #1)
 def inl2_retrieval(documents, query):    
     # Tokenize documents and query
     def tokenize(text):
@@ -31,6 +31,7 @@ def inl2_retrieval(documents, query):
         
     return scores
 
+# NLTK integrated Part of speech tagging functionality (MP Integration Function #2)
 def pos_tagging(text):
     # Tokenize the input text into words
     words = nltk.word_tokenize(text)
@@ -40,6 +41,7 @@ def pos_tagging(text):
 
     return pos_tags
 
+# NDCG scoring functionality (MP Integration Function #3)
 def ndcg(ranker, queries, relevant_docs, k=10):
     ndcg_scores = []
 
@@ -79,6 +81,7 @@ def ndcg(ranker, queries, relevant_docs, k=10):
 
     return avg_ndcg
 
+# NLTK integrated Naive Bayes Classifier (MP Integration Function #4)
 def naive_bayes_classifier(training_data, new_text):
     # Define a feature extractor function (simple bag-of-words)
     def extract_features(text):
@@ -104,16 +107,7 @@ def naive_bayes_classifier(training_data, new_text):
 
     return classification
 
-# training_data = [
-#     ("This movie is great!", 'positive'),
-#     ("Awful film, don't watch it.", 'negative')
-# ]
-
-# new_text = "I loved the acting in this movie."
-
-# result = naive_bayes_classifer(training_data, new_text)
-# print("Classification:", result)
-
+# NLTK integrated stemmer and lemmatizer (MP Integration Function #5)
 def stem_lemmatize(text):
     # Tokenize the text into words
     words = nltk.word_tokenize(text)
@@ -127,8 +121,3 @@ def stem_lemmatize(text):
     lemmatized_words = [lemmatizer.lemmatize(word) for word in words]
 
     return stemmed_words, lemmatized_words
-
-# text = "Running and ran are both forms of the word run"
-# stemmed, lemmatized = stem_lemmatize(text)
-# print("Stemmed:", stemmed)
-# print("Lemmatized:", lemmatized)
