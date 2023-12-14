@@ -6,9 +6,16 @@ nltk.download('punkt')
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 nltk.download('averaged_perceptron_tagger')
+nltk.download('vader_lexicon')
+nltk.download('stopwords')
+
 
 # NLTK integrated Inl2 retrieval functionality (MP Integration Function #1)
-def inl2_retrieval(documents, query):    
+def get_stopwords(lang='english'):
+    return set(nltk.corpus.stopwords.words(lang))
+
+
+def inl2_retrieval(documents, query):
     # Tokenize documents and query
     def tokenize(text):
         return nltk.word_tokenize(text.lower())
@@ -31,6 +38,7 @@ def inl2_retrieval(documents, query):
         
     return scores
 
+
 # NLTK integrated Part of speech tagging functionality (MP Integration Function #2)
 def pos_tagging(text):
     # Tokenize the input text into words
@@ -40,6 +48,7 @@ def pos_tagging(text):
     pos_tags = nltk.pos_tag(words)
 
     return pos_tags
+
 
 # NDCG scoring functionality (MP Integration Function #3)
 def ndcg(ranker, queries, relevant_docs, k=10):
@@ -107,6 +116,7 @@ def naive_bayes_classifier(training_data, new_text):
 
     return classification
 
+
 # NLTK integrated stemmer and lemmatizer (MP Integration Function #5)
 def stem_lemmatize(text):
     # Tokenize the text into words
@@ -121,3 +131,116 @@ def stem_lemmatize(text):
     lemmatized_words = [lemmatizer.lemmatize(word) for word in words]
 
     return stemmed_words, lemmatized_words
+
+
+def get_text_sentiment(text, negative_thres=-0.05, positive_thres=0.05):
+    # Create an instance of SentimentIntensityAnalyzer
+    from nltk.sentiment import SentimentIntensityAnalyzer
+    sid = SentimentIntensityAnalyzer()
+
+    # Get the sentiment scores
+    sentiment_score = sid.polarity_scores(text)
+
+    # Determine sentiment based on the compound score
+    if sentiment_score['compound'] >= positive_thres:
+        sentiment = 'Positive'
+    elif sentiment_score['compound'] <= negative_thres:
+        sentiment = 'Negative'
+    else:
+        sentiment = 'Neutral'
+
+    return sentiment, sentiment_score
+
+
+def max_entropy(train_data, test_data, algorithm='GIS', trace=0, max_iter=1000):
+    # Feature extraction function
+    def document_features(document):
+        return {word: (word in document) for word in document_words}
+
+    # Get all unique words in the dataset
+    document_words = set(word.lower() for doc, _ in train_data for word in doc)
+
+    # Train the MaxEnt classifier
+    classifier = nltk.classify.MaxentClassifier.train(train_data, algorithm=algorithm, trace=trace, max_iter=max_iter)
+
+    # Evaluate the classifier
+    probs = []
+    for featureset in test_data:
+        pdist = classifier.prob_classify(featureset)
+        prob = {}
+        for word in ['x', 'y']:
+            prob[word] = round(pdist.prob(word), 2)
+        probs.append(prob)
+
+    # Get prediction for test data
+    many = classifier.classify_many(test_data)
+
+    return classifier, probs, many
+
+
+def analyze_collocation(text, gram):
+    # Tools to utilize depending on the gram number
+    finders = {
+        2: nltk.collocations.BigramCollocationFinder,
+        3: nltk.collocations.TrigramCollocationFinder,
+        4: nltk.collocations.QuadgramCollocationFinder
+    }
+    measures = {
+        2: nltk.collocations.BigramAssocMeasures,
+        3: nltk.collocations.TrigramAssocMeasures,
+        4: nltk.collocations.QuadgramAssocMeasures
+    }
+
+    # Tokenize the text
+    words = nltk.wordpunct_tokenize(text)
+
+    # Create a gramCollocationFinder
+    gram_finder = finders[gram].from_words(words)
+
+    # Filter out collocations based on frequency and other measures
+    gram_measures = measures[gram]()
+
+    return {'gram_finder': gram_finder, 'gram_measures': gram_measures}
+
+
+def get_collocation_ngram_score(text, gram=2, n=2, method='raw_freq'):
+    analysis = analyze_collocation(text, gram)
+    return analysis['gram_finder'].score_ngrams(getattr(analysis['gram_measures'], method))
+
+
+def get_collocation_n_best(text, gram=2, n=2, method='raw_freq'):
+    analysis = analyze_collocation(text, gram)
+    return analysis['gram_finder'].nbest(getattr(analysis['gram_measures'], method), n)
+
+
+def analyze_corpus(corpus):
+    # Tokenize and remove stopwords
+    tokenized_corpus = [nltk.word_tokenize(doc.lower()) for doc in corpus]
+    stop_words = get_stopwords()
+    filtered_corpus = [[word.lower() for word in doc if word.isalnum() and word not in stop_words] for doc in tokenized_corpus]
+
+    # Perform part-of-speech tagging
+    pos_tagged_corpus = [nltk.pos_tag(doc) for doc in filtered_corpus]
+
+    return pos_tagged_corpus
+
+
+def generate_tree(text, grammar, text_is_formatted=False):
+    def build_trees_from_text():
+        # Tokenize the input string
+        words = nltk.word_tokenize(text)
+
+        # Perform syntactic parsing
+        parser = nltk.ChartParser(grammar)
+        return list(parser.parse(words))
+
+    if text_is_formatted:
+        trees = list(nltk.tree.Tree.fromstring(text))
+    else:
+        trees = build_trees_from_text()
+
+    for tree in trees:
+        # Visualize the tree
+        tree.pretty_print()
+
+    return trees
