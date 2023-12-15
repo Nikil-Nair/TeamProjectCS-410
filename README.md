@@ -10,6 +10,6 @@ Source Code:
 
 Documentation: Detailed documentation can be found in the root directory of the project within a file labeled: Documentation.pdf
 
-Software Tutorial Link: https://youtu.be/BgtZtPYPmBU
+Software Tutorial Link: https://youtu.be/d0r1hPG6Daw
 
 Software Tutorial Presentation Link: See 'CS 410 - Extending Metapy Functionality.pptx' above
